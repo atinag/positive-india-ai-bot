@@ -1,0 +1,4 @@
+openai
+requests
+tweepy
+python-dotenv
