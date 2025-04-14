@@ -30,12 +30,17 @@ def get_positive_news():
 # Function to summarize the news using OpenAI
 def summarize_news(news):
     prompt = f"Summarize the following positive news about India:\n\n{news}\n\nSummary:"
-    response = openai.Completion.create(
-        engine="gpt-3.5-turbo",
-        prompt=prompt,
-        max_tokens=100
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo",  # Use the model you prefer (GPT-3.5, GPT-4)
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt},
+        ],
+        max_tokens=100,
     )
-    return response.choices[0].text.strip()
+    return response['choices'][0]['message']['content'].strip()
+
+
 
 # Function to post the summary to Twitter
 def post_to_twitter(summary):
