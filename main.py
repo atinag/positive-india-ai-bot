@@ -39,32 +39,51 @@ def get_positive_news():
     url = f"https://newsapi.org/v2/everything?q=india development&apiKey={NEWS_API_KEY}"
     response = requests.get(url)
     news = response.json()
-    articles = news['articles'][:5]  # Get the top 5 articles
+    article = news['articles'][0]  # Get only top article
+    title = article['title']
+    url = article['url']
+    return title, url
 
-    headlines_with_links = []
-    for article in articles:
-        title = article['title']
-        link = article['url']
-        headlines_with_links.append(f"{title}\n{link}")
+    # headlines_with_links = []
+    # for article in articles:
+    #     title = article['title']
+    #     link = article['url']
+    #     headlines_with_links.append(f"{title}\n{link}")
    
-    return headlines_with_links
+    # return headlines_with_links
     # headlines = "\n".join([article['title'] for article in articles])
     # return headlines
 
 # Function to summarize the news using OpenAI
-def summarize_news(news):
-    prompt = f"Summarize the following positive news about India:\n\n{news}\n\nSummary:"
+def summarize_news(title,url):
     
+    summaries = []
+    prompt = f"Summarize this positive news headline about India:\n\n{title}\n\nSummary:"
     response = client.chat.completions.create(
-        model=AZURE_DEPLOYMENT_NAME,  # This should be your deployment name
-        messages=[
-            {"role": "system", "content": "You are a helpful assistant that summarizes positive news about India for social media."},
-            {"role": "user", "content": prompt}
-        ],
-        temperature=0.7,
-        max_tokens=500,
-    )
-    return response.choices[0].message.content.strip()
+            model=AZURE_DEPLOYMENT_NAME,  # This should be your deployment name
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant that summarizes positive news about India for social media."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=100
+        )
+    
+    summary = response.choices[0].message.content.strip()
+    return summary,url
+    
+    
+    # prompt = f"Summarize the following positive news about India:\n\n{news}\n\nSummary:"
+    
+    # response = client.chat.completions.create(
+    #     model=AZURE_DEPLOYMENT_NAME,  # This should be your deployment name
+    #     messages=[
+    #         {"role": "system", "content": "You are a helpful assistant that summarizes positive news about India for social media."},
+    #         {"role": "user", "content": prompt}
+    #     ],
+    #     temperature=0.7,
+    #     max_tokens=500,
+    # )
+    # return response.choices[0].message.content.strip()
 
 
 
@@ -83,7 +102,6 @@ def post_to_twitter(summary):
 def post_thread(summary):
     
     print(f"Summary is:\n{summary}")
-    print(f"Type of summary: {type(summary)}")
     
     # Split summary by newlines assuming each is a tweet-length paragraph
     tweets = summary.split('\n')
@@ -104,17 +122,44 @@ def post_thread(summary):
 
 
 
+def post_threadwithlink(summary,url):
+    
+    print(f"Summary is:\n{summary}")
+    print(f"URL is:\n{url}")
+
+    first_tweet_text = f"{summary}\n🔗 {url}"
+
+    # Check if the first tweet exceeds Twitter's character limit
+    if len(first_tweet_text) > 280:
+        # Trim the summary to fit within the limit
+        truncated_summary = first_tweet_text[:280]
+        tweet = tweepyclient.create_tweet(text=truncated_summary)
+        tweet_id = tweet.data["id"]
+        
+        # Now, post the rest of the summary as a thread
+        remaining_summary = first_tweet_text[280:]
+        split_summary = [remaining_summary[i:i+280] for i in range(0, len(remaining_summary), 280)]
+        for part in split_summary:
+            tweet = tweepyclient.create_tweet(text=part, in_reply_to_tweet_id=tweet_id)
+            tweet_id = tweet.data["id"]
+    else:
+        # If the tweet fits within the limit, post it as a single tweet
+        tweet = tweepyclient.create_tweet(text=first_tweet_text)
+        tweet_id = tweet.data["id"]
+
+
 # Main function
 def main():
     
-    positive_news_items = get_positive_news()
+    title,url = get_positive_news()
 
     #summarized_news = summarize_news(positive_news)
-    combined_text = "\n\n".join(positive_news_items)
-    summarized_news = summarize_news(combined_text)
+    # combined_text = "\n\n".join(positive_news_items)
+    summary,url = summarize_news(title,url)
 
     # post_to_twitter(summarized_news)
-    post_thread(summarized_news)
+    # post_thread(summarized_news)
+    post_threadwithlink(summary,url)
 
 if __name__ == "__main__":
     main()
