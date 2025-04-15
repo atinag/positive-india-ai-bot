@@ -3,13 +3,24 @@ import requests
 import tweepy
 import json
 import os
+from openai import AzureOpenAI
 
 
 # Azure OpenAI configuration
-openai.api_type = "azure"
-openai.api_base = "https://azureopenaipoistiveindiabotinstance.openai.azure.com/"
-openai.api_version = "2024-12-01-preview"
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.api_type = "azure"
+# openai.api_base = "https://azureopenaipoistiveindiabotinstance.openai.azure.com/"
+# openai.api_version = "2024-12-01-preview"
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
+client = AzureOpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),
+    api_version="2023-12-01-preview",
+    azure_endpoint="https://azureopenaipoistiveindiabotinstance.openai.azure.com/",
+)
+
+AZURE_DEPLOYMENT_NAME = "gpt-35-turbo"  
+
 
 
 # API Keys from GitHub Secrets
@@ -37,8 +48,18 @@ def get_positive_news():
 # Function to summarize the news using OpenAI
 def summarize_news(news):
     prompt = f"Summarize the following positive news about India:\n\n{news}\n\nSummary:"
-    response = openai.ChatCompletion.create(
-        engine="gpt-35-turbo",
+    # response = openai.ChatCompletion.create(
+    #     engine="gpt-35-turbo",
+    #     messages=[
+    #         {"role": "system", "content": "You are an assistant that summarizes positive news from India."},
+    #         {"role": "user", "content": prompt}
+    #     ],
+    #     temperature=0.7,
+    #     max_tokens=100,
+    # )
+    # return response["choices"][0]["message"]["content"].strip()
+    response = client.chat.completions.create(
+        model=AZURE_DEPLOYMENT_NAME,  # This should be your deployment name
         messages=[
             {"role": "system", "content": "You are an assistant that summarizes positive news from India."},
             {"role": "user", "content": prompt}
@@ -46,7 +67,8 @@ def summarize_news(news):
         temperature=0.7,
         max_tokens=100,
     )
-    return response["choices"][0]["message"]["content"].strip()
+    return response.choices[0].message.content.strip()
+
 
 
 # Function to post the summary to Twitter
