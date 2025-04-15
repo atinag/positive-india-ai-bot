@@ -42,7 +42,6 @@ tweepyclient = tweepy.Client(
 
 # List of enriched queries to focus on India's growth stories
 topics = [
-    "India economic growth",
     "India growth story",
     "Positive news about India",
     "India achievements"
