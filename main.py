@@ -82,8 +82,17 @@ def summarize_news(news):
 # Function to post the summary to Twitter
 def post_to_twitter(summary):
     # api.update_status(summary)
-    response = tweepyclient.create_tweet(
-    text="Tweeting from an AI agent")
+    print(f"Summary is:\n{summary}")
+    print(f"Type of summary: {type(summary)}")
+
+    if len(summary) > 280:
+        summary = summary[:277] + "..."
+
+    # Now tweet
+    response = tweepyclient.create_tweet(text=summary)
+
+    # response = tweepyclient.create_tweet(
+    # text=summary.)
 
 
 # Main function
