@@ -43,16 +43,10 @@ tweepyclient = tweepy.Client(
 # List of enriched queries to focus on India's growth stories
 topics = [
     "India economic growth",
-    "India infrastructure development",
-    "Indian startups",
+    "India growth story",
     "Make in India success",
-    "India exports",
-    "India renewable energy",
-    "Digital India initiative",
-    "Indian innovation",
-    "Indian space technology",
-    "India manufacturing boom"
-]
+    "India rising",
+    ]
 
 # Trusted domains
 domains = ",".join([
