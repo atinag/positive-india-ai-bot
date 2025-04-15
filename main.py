@@ -68,19 +68,18 @@ domains = ",".join([
 def get_positive_news():
     
     
-    # URL-encode each topic for the query string
-    encoded_topics = [urllib.parse.quote(topic) for topic in topics]
     
     # Join topics with 'OR' logic
-    query = " OR ".join(encoded_topics)
+    query = " OR ".join(topics)
+    encoded_query = urllib.parse.quote(query)
     
-    print(f"Using query: {query}")
+    print(f"Using query: {encoded_query}")
 
     # url = f"https://newsapi.org/v2/everything?q=india development&apiKey={NEWS_API_KEY}"
 
     url = (
         f"https://newsapi.org/v2/everything?"
-        f"q={query}"
+        f"q={encoded_query}"
         f"&language=en"
         f"&sortBy=publishedAt"
         f"&from={(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')}"
