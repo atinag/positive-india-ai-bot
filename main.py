@@ -4,6 +4,9 @@ import tweepy
 import json
 import os
 from openai import AzureOpenAI
+import random
+from datetime import datetime, timedelta
+
 
 
 # Azure OpenAI configuration
@@ -33,16 +36,75 @@ tweepyclient = tweepy.Client(
     consumer_key = consumer_key, consumer_secret = consumer_secret,
     access_token=access_token, access_token_secret=access_token_secret)
 
+# List of enriched queries to focus on India's growth stories
+topics = [
+    "India economic growth",
+    "India infrastructure development",
+    "Indian startups",
+    "Make in India success",
+    "India exports",
+    "India renewable energy",
+    "Digital India initiative",
+    "Indian innovation",
+    "Indian space technology",
+    "India manufacturing boom"
+]
+
+# domains known for quality development reporting
+domains = (
+        "thehindu.com, livemint.com, business-standard.com, timesofindia.indiatimes.com, "
+        "hindustantimes.com, ndtv.com, indianexpress.com, economictimes.indiatimes.com, "
+        "financialexpress.com, yourstory.com, inc42.com, indiatoday.in, theprint.in, "
+        "scroll.in, isro.gov.in, science.thewire.in, downtoearth.org.in, india.mongabay.com"
+    )
+
 
 # Function to fetch positive news about India
 def get_positive_news():
-    url = f"https://newsapi.org/v2/everything?q=india development&apiKey={NEWS_API_KEY}"
-    response = requests.get(url)
-    news = response.json()
-    article = news['articles'][0]  # Get only top article
-    title = article['title']
-    url = article['url']
-    return title, url
+    
+    query = " OR ".join([f"site:{topic}" for topic in topics])
+    
+    print(f"Using query: {query}")
+
+    # url = f"https://newsapi.org/v2/everything?q=india development&apiKey={NEWS_API_KEY}"
+
+    url = (
+        f"https://newsapi.org/v2/everything?q={query}"
+        f"&domains={domains}"
+        f"&language=en"
+        f"&sortBy=publishedAt"
+        f"&from={(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')}"
+        f"&apiKey={NEWS_API_KEY}"
+    )
+
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Raise an error for bad responses
+        news = response.json()
+        articles = news.get("articles", [])
+    
+        if not articles:
+            raise ValueError("No articles found for the given query.")
+        
+        # Select the top article
+        article = articles[0]
+        title = article.get("title", "No Title Available")
+        url = article.get("url", "")
+        description = article.get("description", "No Description Available")
+        
+        print(f"Title: {title}")
+        print(f"URL: {url}")
+        print(f"Description: {description}")
+
+        return title, url
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching news: {e}")
+        return None, None
+    
+    except ValueError as e:
+        print(f"Error: {e}")
+        return None, None
 
 
 # Function to summarize the news using OpenAI
