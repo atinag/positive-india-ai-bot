@@ -83,7 +83,7 @@ def summarize_news(news):
 def post_to_twitter(summary):
     # api.update_status(summary)
     response = tweepyclient.create_tweet(
-    text=summary)
+    text="Tweeting from an AI agent")
 
 
 # Main function
