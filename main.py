@@ -79,6 +79,8 @@ def get_positive_news():
         f"&apiKey={NEWS_API_KEY}"
     )
 
+    print(f"NewsAPI Request URL: {url}")
+
     try:
         response = requests.get(url)
         response.raise_for_status()  # Raise an error for bad responses
