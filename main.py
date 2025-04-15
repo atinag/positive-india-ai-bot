@@ -124,32 +124,37 @@ def post_thread(summary):
 
 def post_threadwithlink(summary,url):
 
-    hashtags = "#PositiveIndia #IndiaDevelopment #Progress #FutureIndia #GoodNewsIndia"
+    hashtags = "#PositiveIndia #IndiaDevelopment #GoodNewsIndia"
 
-    
     print(f"Summary is:\n{summary}")
     print(f"URL is:\n{url}")
 
+    # Add hashtags and URL only to the first tweet
     first_tweet_text = f"{summary}\n🔗 {url}\n{hashtags}"
-    print(f"Length of first tweet is:\n{first_tweet_text}")
+    print(f"Length of first tweet is:\n{len(first_tweet_text)}")
 
     # Check if the first tweet exceeds Twitter's character limit
     if len(first_tweet_text) > 280:
         # Trim the summary to fit within the limit
-        truncated_summary = first_tweet_text[:280]
-        tweet = tweepyclient.create_tweet(text=truncated_summary)
-        tweet_id = tweet.data["id"]
-        
-        # Now, post the rest of the summary as a thread
-        remaining_summary = first_tweet_text[280:]
-        split_summary = [remaining_summary[i:i+280] for i in range(0, len(remaining_summary), 280)]
+        truncated_summary = summary[:280 - len(hashtags) - len(url) - 5]  # Reserve space for hashtags and URL
+        first_tweet_text = f"{truncated_summary}...\n🔗 {url}\n{hashtags}"
+    else:
+        truncated_summary = summary  # No truncation needed
+
+    # Post the first tweet
+    tweet = tweepyclient.create_tweet(text=first_tweet_text)
+    tweet_id = tweet.data["id"]
+
+    # Prepare the remaining summary for the thread
+    remaining_summary = summary[len(truncated_summary):].strip()
+    if remaining_summary:
+        # Split the remaining summary into chunks of 280 characters (no hashtags or URL here)
+        split_summary = [remaining_summary[i:i + 280] for i in range(0, len(remaining_summary), 280)]
         for part in split_summary:
             tweet = tweepyclient.create_tweet(text=part, in_reply_to_tweet_id=tweet_id)
             tweet_id = tweet.data["id"]
-    else:
-        # If the tweet fits within the limit, post it as a single tweet
-        tweet = tweepyclient.create_tweet(text=first_tweet_text)
-        tweet_id = tweet.data["id"]
+
+    return tweet_id
 
 
 # Main function
