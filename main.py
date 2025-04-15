@@ -44,8 +44,8 @@ tweepyclient = tweepy.Client(
 topics = [
     "India economic growth",
     "India growth story",
-    "Make in India success",
-    "India rising",
+    "Positive news about India",
+    "India achievements"
     ]
 
 # Trusted domains
@@ -98,7 +98,7 @@ def get_positive_news():
             sentiment = TextBlob(text).sentiment.polarity
             print(f"Article: {text}")
             print(f"Sentiment: {sentiment}")
-            if sentiment > 0.3:  # Adjust threshold as needed
+            if sentiment > 0.1:  # Adjust threshold as needed
                 positive_articles.append((sentiment, article))
 
         if not positive_articles:
