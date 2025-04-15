@@ -44,15 +44,6 @@ def get_positive_news():
     url = article['url']
     return title, url
 
-    # headlines_with_links = []
-    # for article in articles:
-    #     title = article['title']
-    #     link = article['url']
-    #     headlines_with_links.append(f"{title}\n{link}")
-   
-    # return headlines_with_links
-    # headlines = "\n".join([article['title'] for article in articles])
-    # return headlines
 
 # Function to summarize the news using OpenAI
 def summarize_news(title,url):
@@ -71,21 +62,6 @@ def summarize_news(title,url):
     summary = response.choices[0].message.content.strip()
     return summary,url
     
-    
-    # prompt = f"Summarize the following positive news about India:\n\n{news}\n\nSummary:"
-    
-    # response = client.chat.completions.create(
-    #     model=AZURE_DEPLOYMENT_NAME,  # This should be your deployment name
-    #     messages=[
-    #         {"role": "system", "content": "You are a helpful assistant that summarizes positive news about India for social media."},
-    #         {"role": "user", "content": prompt}
-    #     ],
-    #     temperature=0.7,
-    #     max_tokens=500,
-    # )
-    # return response.choices[0].message.content.strip()
-
-
 
 # Function to post the summary to Twitter
 def post_to_twitter(summary):
@@ -173,13 +149,7 @@ def post_threadwithlink(summary,url):
 def main():
     
     title,url = get_positive_news()
-
-    #summarized_news = summarize_news(positive_news)
-    # combined_text = "\n\n".join(positive_news_items)
     summary,url = summarize_news(title,url)
-
-    # post_to_twitter(summarized_news)
-    # post_thread(summarized_news)
     post_threadwithlink(summary,url)
 
 if __name__ == "__main__":
