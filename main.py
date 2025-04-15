@@ -84,7 +84,7 @@ def post_thread(summary):
         if not text:
             continue
         text_with_tags = (text + hashtags) if len(text) + len(hashtags) < 280 else text
-        response = client.create_tweet(text=text_with_tags, in_reply_to_tweet_id=reply_to_id)
+        response = tweepyclient.create_tweet(text=text_with_tags, in_reply_to_tweet_id=reply_to_id)
         tweet_ids.append(response.data['id'])
         reply_to_id = response.data['id']
 
