@@ -21,7 +21,11 @@ client = AzureOpenAI(
 
 AZURE_DEPLOYMENT_NAME = "gpt-35-turbo"  
 
-
+BEARER_TOKEN = os.getenv("TWITTER_BEARER_TOKEN")
+headers = {
+    "Authorization": f"Bearer {BEARER_TOKEN}",
+    "Content-Type": "application/json"
+}
 
 # API Keys from GitHub Secrets
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
@@ -33,8 +37,12 @@ access_token = os.getenv("TWITTER_ACCESS_TOKEN")
 access_token_secret = os.getenv("TWITTER_ACCESS_SECRET")
 
 # Set up tweepy client
-auth = tweepy.OAuth1UserHandler(consumer_key, consumer_secret, access_token, access_token_secret)
-api = tweepy.API(auth)
+# auth = tweepy.OAuth1UserHandler(consumer_key, consumer_secret, access_token, access_token_secret)
+# api = tweepy.API(auth)
+tweepyclient = tweepy.Client(
+    consumer_key = consumer_key, consumer_secret = consumer_secret,
+    access_token=access_token, access_token_secret=access_token_secret)
+
 
 # Function to fetch positive news about India
 def get_positive_news():
@@ -73,7 +81,10 @@ def summarize_news(news):
 
 # Function to post the summary to Twitter
 def post_to_twitter(summary):
-    api.update_status(summary)
+    # api.update_status(summary)
+    response = tweepyclient.create_tweet(
+    text=summary)
+
 
 # Main function
 def main():
