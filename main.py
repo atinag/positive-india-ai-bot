@@ -89,6 +89,11 @@ def get_positive_news():
             raise ValueError("No articles found for the given query.")
         
 
+        growth_keywords = ["growth", "development",  "success", "boom", "investment", "expansion",
+                            "milestone", "achievement", "launched", "innovation", "breakthrough"
+                            ]
+
+
         # Apply sentiment analysis and filter
         positive_articles = []
         for article in articles:
@@ -96,10 +101,15 @@ def get_positive_news():
             text = f"{article.get('title', '')} {article.get('description', '')}"
             
             sentiment = TextBlob(text).sentiment.polarity
+
+             # Relevance scoring
+            relevance_score = sum(1 for keyword in growth_keywords if keyword.lower() in text.lower())
+
             print(f"Article: {text}")
             print(f"Sentiment: {sentiment}")
-            if sentiment > 0.1:  # Adjust threshold as needed
-                positive_articles.append((sentiment, article))
+            
+            if sentiment > 0.1 and relevance_score > 0:  # Adjust threshold as needed
+                positive_articles.append((sentiment+relevance_score, article))
 
         if not positive_articles:
             raise ValueError("No overwhelmingly positive articles found.")
