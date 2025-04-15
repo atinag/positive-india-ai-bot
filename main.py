@@ -40,8 +40,16 @@ def get_positive_news():
     response = requests.get(url)
     news = response.json()
     articles = news['articles'][:5]  # Get the top 5 articles
-    headlines = "\n".join([article['title'] for article in articles])
-    return headlines
+
+    headlines_with_links = []
+    for article in articles:
+        title = article['title']
+        link = article['url']
+        headlines_with_links.append(f"{title}\n{link}")
+   
+    return headlines_with_links
+    # headlines = "\n".join([article['title'] for article in articles])
+    # return headlines
 
 # Function to summarize the news using OpenAI
 def summarize_news(news):
@@ -73,6 +81,10 @@ def post_to_twitter(summary):
 
 
 def post_thread(summary):
+    
+    print(f"Summary is:\n{summary}")
+    print(f"Type of summary: {type(summary)}")
+    
     # Split summary by newlines assuming each is a tweet-length paragraph
     tweets = summary.split('\n')
     hashtags = " \ud83c\uddee\ud83c\uddf3\u2728 #PositiveIndia #IndiaRising"
@@ -94,8 +106,13 @@ def post_thread(summary):
 
 # Main function
 def main():
-    positive_news = get_positive_news()
-    summarized_news = summarize_news(positive_news)
+    
+    positive_news_items = get_positive_news()
+
+    #summarized_news = summarize_news(positive_news)
+    combined_text = "\n\n".join(positive_news_items)
+    summarized_news = summarize_news(combined_text)
+
     # post_to_twitter(summarized_news)
     post_thread(summarized_news)
 
