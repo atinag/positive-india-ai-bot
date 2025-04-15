@@ -53,14 +53,10 @@ domains = ",".join([
     "thehindu.com", "livemint.com", "business-standard.com",
     "timesofindia.indiatimes.com", "hindustantimes.com", "ndtv.com",
     "indianexpress.com", "economictimes.indiatimes.com", "financialexpress.com",
-    "yourstory.com", "inc42.com", "indiatoday.in", "theprint.in", "scroll.in",
-    "downtoearth.org.in", "india.mongabay.com"
-])
-
+    "yourstory.com", "indiatoday.in", "theprint.in", "scroll.in"])
 
 # Function to fetch positive news about India
 def get_positive_news():
-    
     
     
     # Join topics with 'OR' logic
@@ -74,6 +70,7 @@ def get_positive_news():
     url = (
         f"https://newsapi.org/v2/everything?"
         f"q={encoded_query}"
+        f"domains={{domains}}"
         f"&language=en"
         f"&sortBy=publishedAt"
         f"&from={(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')}"
