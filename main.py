@@ -4,8 +4,15 @@ import tweepy
 import json
 import os
 
-# API Keys from GitHub Secrets
+
+# Azure OpenAI configuration
+openai.api_type = "azure"
+openai.api_base = "https://azureopenaipoistiveindiabotinstance.openai.azure.com/"
+openai.api_version = "2024-12-01-preview"
 openai.api_key = os.getenv("OPENAI_API_KEY")
+
+
+# API Keys from GitHub Secrets
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
 
 # Twitter API credentials
