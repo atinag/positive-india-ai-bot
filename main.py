@@ -70,7 +70,7 @@ def get_positive_news():
     url = (
         f"https://newsapi.org/v2/everything?"
         f"q={encoded_query}"
-        f"domains={{domains}}"
+        f"&domains={domains}"
         f"&language=en"
         f"&sortBy=publishedAt"
         f"&from={(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')}"
