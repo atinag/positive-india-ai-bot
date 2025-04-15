@@ -7,6 +7,8 @@ from openai import AzureOpenAI
 import random
 from datetime import datetime, timedelta
 from textblob import TextBlob
+import urllib.parse
+
 
 
 
@@ -65,7 +67,12 @@ domains = ",".join([
 # Function to fetch positive news about India
 def get_positive_news():
     
-    query = " OR ".join(topics)
+    
+    # URL-encode each topic for the query string
+    encoded_topics = [urllib.parse.quote(topic) for topic in topics]
+    
+    # Join topics with 'OR' logic
+    query = " OR ".join(encoded_topics)
     
     print(f"Using query: {query}")
 
