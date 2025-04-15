@@ -6,6 +6,8 @@ import os
 from openai import AzureOpenAI
 import random
 from datetime import datetime, timedelta
+from textblob import TextBlob
+
 
 
 
@@ -89,11 +91,26 @@ def get_positive_news():
         if not articles:
             raise ValueError("No articles found for the given query.")
         
-        # Select the top article
-        article = articles[0]
-        title = article.get("title", "No Title Available")
-        url = article.get("url", "")
-        description = article.get("description", "No Description Available")
+
+        # Apply sentiment analysis and filter
+        positive_articles = []
+        for article in articles:
+            
+            text = f"{article.get('title', '')} {article.get('description', '')}"
+            
+            sentiment = TextBlob(text).sentiment.polarity
+            if sentiment > 0.3:  # Adjust threshold as needed
+                positive_articles.append((sentiment, article))
+
+        if not positive_articles:
+            raise ValueError("No overwhelmingly positive articles found.")
+
+        
+        # Pick the highest sentiment article
+        top_article = sorted(positive_articles, reverse=True)[0][1]
+        title = top_article.get("title", "No Title Available")
+        url = top_article.get("url", "")
+        description = top_article.get("description", "No Description Available")
         
         print(f"Title: {title}")
         print(f"URL: {url}")
