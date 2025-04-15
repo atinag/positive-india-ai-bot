@@ -50,26 +50,28 @@ topics = [
     "India manufacturing boom"
 ]
 
-# domains known for quality development reporting
-domains = (
-        "thehindu.com, livemint.com, business-standard.com, timesofindia.indiatimes.com, "
-        "hindustantimes.com, ndtv.com, indianexpress.com, economictimes.indiatimes.com, "
-        "financialexpress.com, yourstory.com, inc42.com, indiatoday.in, theprint.in, "
-        "scroll.in, isro.gov.in, science.thewire.in, downtoearth.org.in, india.mongabay.com"
-    )
+# Trusted domains
+domains = ",".join([
+    "thehindu.com", "livemint.com", "business-standard.com",
+    "timesofindia.indiatimes.com", "hindustantimes.com", "ndtv.com",
+    "indianexpress.com", "economictimes.indiatimes.com", "financialexpress.com",
+    "yourstory.com", "inc42.com", "indiatoday.in", "theprint.in", "scroll.in",
+    "downtoearth.org.in", "india.mongabay.com"
+])
 
 
 # Function to fetch positive news about India
 def get_positive_news():
     
-    query = " OR ".join([f"site:{topic}" for topic in topics])
+    query = " OR ".join(topics)
     
     print(f"Using query: {query}")
 
     # url = f"https://newsapi.org/v2/everything?q=india development&apiKey={NEWS_API_KEY}"
 
     url = (
-        f"https://newsapi.org/v2/everything?q={query}"
+        f"https://newsapi.org/v2/everything?"
+        f"q={query}"
         f"&domains={domains}"
         f"&language=en"
         f"&sortBy=publishedAt"
