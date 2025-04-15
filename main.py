@@ -99,6 +99,8 @@ def get_positive_news():
             text = f"{article.get('title', '')} {article.get('description', '')}"
             
             sentiment = TextBlob(text).sentiment.polarity
+            print(f"Article: {text}")
+            print(f"Sentiment: {sentiment}")
             if sentiment > 0.3:  # Adjust threshold as needed
                 positive_articles.append((sentiment, article))
 
