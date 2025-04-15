@@ -123,11 +123,15 @@ def post_thread(summary):
 
 
 def post_threadwithlink(summary,url):
+
+    hashtags = "#PositiveIndia #IndiaDevelopment #Progress #FutureIndia #GoodNewsIndia"
+
     
     print(f"Summary is:\n{summary}")
     print(f"URL is:\n{url}")
 
-    first_tweet_text = f"{summary}\n🔗 {url}"
+    first_tweet_text = f"{summary}\n🔗 {url}\n{hashtags}"
+    print(f"Length of first tweet is:\n{first_tweet_text}")
 
     # Check if the first tweet exceeds Twitter's character limit
     if len(first_tweet_text) > 280:
