@@ -24,9 +24,12 @@ consumer_key = os.getenv("TWITTER_CONSUMER_KEY")
 consumer_secret = os.getenv("TWITTER_CONSUMER_SECRET")
 access_token = os.getenv("TWITTER_ACCESS_TOKEN")
 access_token_secret = os.getenv("TWITTER_ACCESS_SECRET")
+twitter_bearer_token = os.getenv("TWITTER_BEARER_TOKEN")
+
 
 # Set up tweepy client
 tweepyclient = tweepy.Client(
+    bearer_token=twitter_bearer_token,
     consumer_key = consumer_key, consumer_secret = consumer_secret,
     access_token=access_token, access_token_secret=access_token_secret)
 
@@ -47,11 +50,11 @@ def summarize_news(news):
     response = client.chat.completions.create(
         model=AZURE_DEPLOYMENT_NAME,  # This should be your deployment name
         messages=[
-            {"role": "system", "content": "You are an assistant that summarizes positive news from India."},
+            {"role": "system", "content": "You are a helpful assistant that summarizes positive news about India for social media."},
             {"role": "user", "content": prompt}
         ],
         temperature=0.7,
-        max_tokens=100,
+        max_tokens=500,
     )
     return response.choices[0].message.content.strip()
 
@@ -69,11 +72,32 @@ def post_to_twitter(summary):
     response = tweepyclient.create_tweet(text=summary)
 
 
+def post_thread(summary):
+    # Split summary by newlines assuming each is a tweet-length paragraph
+    tweets = summary.split('\n')
+    hashtags = " \ud83c\uddee\ud83c\uddf3\u2728 #PositiveIndia #IndiaRising"
+    tweet_ids = []
+    reply_to_id = None
+
+    for tweet in tweets:
+        text = tweet.strip()
+        if not text:
+            continue
+        text_with_tags = (text + hashtags) if len(text) + len(hashtags) < 280 else text
+        response = client.create_tweet(text=text_with_tags, in_reply_to_tweet_id=reply_to_id)
+        tweet_ids.append(response.data['id'])
+        reply_to_id = response.data['id']
+
+    return tweet_ids
+
+
+
 # Main function
 def main():
     positive_news = get_positive_news()
     summarized_news = summarize_news(positive_news)
-    post_to_twitter(summarized_news)
+    # post_to_twitter(summarized_news)
+    post_thread(summarized_news)
 
 if __name__ == "__main__":
     main()
