@@ -38,7 +38,7 @@ def get_positive_news():
 def summarize_news(news):
     prompt = f"Summarize the following positive news about India:\n\n{news}\n\nSummary:"
     response = openai.completions.create(
-        engine="gpt-35-turbo"
+        engine="gpt-35-turbo",
         #model="gpt-3.5-turbo",  # Ensure you are using the correct model name
         prompt=prompt,
         max_tokens=100,
