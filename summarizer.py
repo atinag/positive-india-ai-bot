@@ -1,9 +1,7 @@
-import logging
+from logger import logger  # Import the centralized logger
 import openai
 import time
 from typing import Optional, Tuple
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def summarize_news(client, model: str, title: str, url: str, retries: int = 3, prompt_template: str = None) -> Tuple[Optional[str], str]:
     """
@@ -26,7 +24,7 @@ def summarize_news(client, model: str, title: str, url: str, retries: int = 3, p
 
     for attempt in range(retries):
         try:
-            logging.info(f"Summarizing news for title: {title}")
+            logger.info(f"Summarizing news for title: {title}")
             response = client.chat.completions.create(
                 model=model,
                 messages=[
@@ -36,15 +34,16 @@ def summarize_news(client, model: str, title: str, url: str, retries: int = 3, p
                 max_tokens=100
             )
             summary = response.choices[0].message.content.strip()
+            logger.info(f"Generated summary: {summary}")
             return summary, url
         except openai.error.OpenAIError as e:
-            logging.error(f"OpenAI API error on attempt {attempt + 1}: {e}")
+            logger.error(f"OpenAI API error on attempt {attempt + 1}: {e}")
             if attempt < retries - 1:
                 time.sleep(2 ** attempt)  # Exponential backoff
             else:
                 return None, url
         except Exception as e:
-            logging.error(f"Unexpected error on attempt {attempt + 1}: {e}")
+            logger.error(f"Unexpected error on attempt {attempt + 1}: {e}")
             if attempt < retries - 1:
                 time.sleep(2 ** attempt)
             else:

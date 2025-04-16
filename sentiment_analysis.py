@@ -1,8 +1,6 @@
-import logging
+from logger import logger  # Import the centralized logger
 from textblob import TextBlob
 from typing import Tuple
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 def analyze_sentiment_with_textblob_and_filter(text):
     """
@@ -24,8 +22,8 @@ def analyze_sentiment_with_textblob_and_filter(text):
     # Relevance scoring
     relevance_score = sum(1 for keyword in growth_keywords if keyword.lower() in text.lower())
 
-    logging.info(f"Text: {text}")
-    logging.info(f"Sentiment: {sentiment}, Relevance: {relevance_score}")
+    logger.info(f"Text: {text}")
+    logger.info(f"Sentiment: {sentiment}, Relevance: {relevance_score}")
 
     return sentiment, relevance_score
 
@@ -50,7 +48,7 @@ def analyze_sentiment_with_openai(client, text: str, model: str) -> Tuple[float,
         f"Respond in the format: Sentiment: <score>, Relevance: <score>"
     )
     try:
-        logging.info("Sending text to OpenAI for sentiment and relevance analysis...")
+        logger.info("Sending text to OpenAI for sentiment and relevance analysis...")
         response = client.chat.completions.create(
             model=model,
             messages=[
@@ -60,7 +58,7 @@ def analyze_sentiment_with_openai(client, text: str, model: str) -> Tuple[float,
             max_tokens=50
         )
         result = response.choices[0].message.content.strip()
-        logging.info(f"OpenAI Analysis Result: {result}")
+        logger.info(f"OpenAI Analysis Result: {result}")
 
         # Parse the result
         sentiment_str, relevance_str = result.replace("Sentiment:", "").replace("Relevance:", "").split(",")
@@ -73,9 +71,9 @@ def analyze_sentiment_with_openai(client, text: str, model: str) -> Tuple[float,
         normalized_relevance = relevance / 10
 
         # Log normalized scores
-        logging.info(f"Normalized Sentiment: {normalized_sentiment}, Normalized Relevance: {normalized_relevance}")
+        logger.info(f"Normalized Sentiment: {normalized_sentiment}, Normalized Relevance: {normalized_relevance}")
 
         return normalized_sentiment, normalized_relevance
     except Exception as e:
-        logging.error(f"Error analyzing sentiment with OpenAI: {e}")
+        logger.error(f"Error analyzing sentiment with OpenAI: {e}")
         return 0.0, 0.0  # Default to neutral sentiment and no relevance

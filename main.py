@@ -2,32 +2,29 @@ from config import NEWS_API_KEY, TOPICS, DOMAINS, SENTIMENT_THRESHOLD, RELEVANCE
 from clients import openai_client, tweepy_client
 from news_fetcher import fetch_news
 from workflow import filter_positive_articles, process_top_article
-import logging
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+from logger import logger  # Import the centralized logger
 
 def main():
     try:
-        # Fetch news articles
+        logger.info("Fetching news articles...")
         articles = fetch_news(TOPICS, DOMAINS, NEWS_API_KEY)
         if not articles:
-            logging.warning("No articles fetched from NewsAPI.")
+            logger.warning("No articles fetched from NewsAPI.")
             return
 
-        # Filter positive articles using OpenAI
+        logger.info("Filtering positive articles...")
         positive_articles = filter_positive_articles(
             articles, openai_client, AZURE_DEPLOYMENT_NAME, SENTIMENT_THRESHOLD, RELEVANCE_THRESHOLD
         )
 
-        # Process the top article
         if positive_articles:
+            logger.info("Processing the top article...")
             process_top_article(positive_articles, openai_client, tweepy_client, AZURE_DEPLOYMENT_NAME)
         else:
-            logging.warning("No overwhelmingly positive and relevant articles found.")
+            logger.warning("No overwhelmingly positive and relevant articles found.")
 
     except Exception as e:
-        logging.error(f"An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred: {e}")
 
 
 if __name__ == "__main__":

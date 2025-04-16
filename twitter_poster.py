@@ -1,7 +1,5 @@
-import logging
+from logger import logger  # Import the centralized logger
 from typing import Optional, List
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 MAX_TWEET_LENGTH = 280
 HASHTAGS = "#PositiveIndia #IndiaDevelopment #GoodNewsIndia"
@@ -16,6 +14,7 @@ def construct_first_tweet(summary: str, url: str) -> str:
         truncated_summary = summary[:MAX_TWEET_LENGTH - len(HASHTAGS) - len(url) - 5]
         truncated_summary = truncated_summary.rsplit(' ', 1)[0]  # Ensure truncation happens at a word boundary
         first_tweet_text = f"{truncated_summary}...\n🔗 {url}\n{HASHTAGS}"
+    logger.debug(f"Constructed first tweet: {first_tweet_text}")
     return first_tweet_text
 
 def split_summary_into_chunks(summary: str) -> List[str]:
@@ -32,6 +31,7 @@ def split_summary_into_chunks(summary: str) -> List[str]:
             chunk = chunk.rsplit(' ', 1)[0]  # Ensure truncation happens at a word boundary
             chunks.append(chunk)
             summary = summary[len(chunk):].strip()
+    logger.debug(f"Split summary into chunks: {chunks}")
     return chunks
 
 def post_to_twitter(client, summary: str, url: str) -> Optional[int]:
@@ -46,20 +46,20 @@ def post_to_twitter(client, summary: str, url: str) -> Optional[int]:
     Returns:
         The ID of the last tweet in the thread, or None if an error occurs.
     """
-    logging.info("Posting to Twitter...")
-    logging.info(f"Summary: {summary}")
-    logging.info(f"URL: {url}")
+    logger.info("Posting to Twitter...")
+    logger.info(f"Summary: {summary}")
+    logger.info(f"URL: {url}")
 
     # Construct the first tweet
     first_tweet_text = construct_first_tweet(summary, url)
-    logging.info(f"First tweet length: {len(first_tweet_text)}")
+    logger.info(f"First tweet length: {len(first_tweet_text)}")
 
     # Post the first tweet
     try:
         tweet = client.create_tweet(text=first_tweet_text)
         tweet_id = tweet.data["id"]
     except Exception as e:
-        logging.error(f"Error posting the first tweet: {e}")
+        logger.error(f"Error posting the first tweet: {e}")
         return None
 
     # Prepare and post the remaining tweets as a thread
@@ -71,9 +71,9 @@ def post_to_twitter(client, summary: str, url: str) -> Optional[int]:
                 tweet = client.create_tweet(text=chunk, in_reply_to_tweet_id=tweet_id)
                 tweet_id = tweet.data["id"]
             except Exception as e:
-                logging.error(f"Error posting a tweet in the thread: {e}")
+                logger.error(f"Error posting a tweet in the thread: {e}")
                 return None
 
-    logging.info("Successfully posted the thread.")
+    logger.info("Successfully posted the thread.")
     return tweet_id
 

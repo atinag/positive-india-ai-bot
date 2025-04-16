@@ -1,4 +1,4 @@
-import logging
+from logger import logger  # Import the centralized logger
 from typing import List, Dict, Tuple, Optional
 from sentiment_analysis import analyze_sentiment_with_openai
 from summarizer import summarize_news
@@ -21,13 +21,13 @@ def filter_positive_articles(articles: List[Dict], client, model: str, sentiment
         if sentiment > sentiment_threshold and relevance > relevance_threshold:
             combined_score = (sentiment + relevance) / 2  # Equal weights
             positive_articles.append((combined_score, article))  # Ensure tuple is appended
-            logging.info(f"Article selected: {title} (Score: {combined_score})")
+            logger.info(f"Article selected: {title} (Score: {combined_score})")
         else:
-            logging.info(f"Article rejected: {title} (Sentiment: {sentiment}, Relevance: {relevance})")
+            logger.info(f"Article rejected: {title} (Sentiment: {sentiment}, Relevance: {relevance})")
 
     # Sort articles by combined score in descending order
     positive_articles = sorted(positive_articles, key=lambda x: x[0], reverse=True)  # Sort by combined_score
-    logging.debug(f"Positive Articles: {positive_articles}")
+    logger.debug(f"Positive Articles: {positive_articles}")
     return positive_articles
 
 
@@ -36,7 +36,7 @@ def process_top_article(positive_articles: List[Tuple[float, Dict]], openai_clie
     Processes the top article by summarizing and posting it to Twitter.
     """
     if not positive_articles:
-        logging.warning("No overwhelmingly positive articles found.")
+        logger.warning("No overwhelmingly positive articles found.")
         return None
 
     # Pick the highest sentiment article
@@ -45,19 +45,19 @@ def process_top_article(positive_articles: List[Tuple[float, Dict]], openai_clie
     url = top_article.get("url", "")
     description = top_article.get("description", "No Description Available")
 
-    logging.info(f"Top article selected: {title}")
+    logger.info(f"Top article selected: {title}")
 
     # Summarize the article
     summary, url = summarize_news(openai_client, model, title, url)
     if not summary:
-        logging.error("Failed to summarize the article.")
+        logger.error("Failed to summarize the article.")
         return None
 
     # Post to Twitter
     tweet_id = post_to_twitter(tweepy_client, summary, url)
     if tweet_id:
-        logging.info(f"Successfully posted to Twitter. Tweet ID: {tweet_id}")
+        logger.info(f"Successfully posted to Twitter. Tweet ID: {tweet_id}")
     else:
-        logging.error("Failed to post to Twitter.")
+        logger.error("Failed to post to Twitter.")
 
     return top_article
