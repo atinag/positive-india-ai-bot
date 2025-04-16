@@ -11,6 +11,7 @@ def construct_first_tweet(summary: str, url: str) -> str:
     """
     first_tweet_text = f"{summary}\n🔗 {url}\n{HASHTAGS}"
     if len(first_tweet_text) > MAX_TWEET_LENGTH:
+        # Adjust truncation to account for hashtags and URL
         truncated_summary = summary[:MAX_TWEET_LENGTH - len(HASHTAGS) - len(url) - 5]
         truncated_summary = truncated_summary.rsplit(' ', 1)[0]  # Ensure truncation happens at a word boundary
         first_tweet_text = f"{truncated_summary}...\n🔗 {url}\n{HASHTAGS}"
@@ -58,18 +59,23 @@ def post_to_twitter(client, summary: str, url: str) -> Optional[int]:
     try:
         tweet = client.create_tweet(text=first_tweet_text)
         tweet_id = tweet.data["id"]
+        logger.info(f"First tweet posted successfully. Tweet ID: {tweet_id}")
     except Exception as e:
         logger.error(f"Error posting the first tweet: {e}")
         return None
 
     # Prepare and post the remaining tweets as a thread
-    remaining_summary = summary[len(first_tweet_text):].strip()
+    remaining_summary = summary[len(summary[:MAX_TWEET_LENGTH - len(HASHTAGS) - len(url) - 5]):].strip()
+    logger.debug(f"Remaining summary after first tweet: {remaining_summary}")
+
     if remaining_summary:
         chunks = split_summary_into_chunks(remaining_summary)
+        logger.debug(f"Chunks to be posted in thread: {chunks}")
         for chunk in chunks:
             try:
                 tweet = client.create_tweet(text=chunk, in_reply_to_tweet_id=tweet_id)
                 tweet_id = tweet.data["id"]
+                logger.info(f"Tweet posted successfully in thread. Tweet ID: {tweet_id}")
             except Exception as e:
                 logger.error(f"Error posting a tweet in the thread: {e}")
                 return None
