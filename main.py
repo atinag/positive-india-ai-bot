@@ -37,8 +37,8 @@ tweepy_client = tweepy.Client(
 )
 
 # Constants
-SENTIMENT_THRESHOLD = 0.1
-RELEVANCE_THRESHOLD = 0
+SENTIMENT_THRESHOLD = 0.5  # At least moderately positive
+RELEVANCE_THRESHOLD = 0.5  # At least moderately relevant
 
 
 def filter_positive_articles(articles: List[Dict], client, model: str) -> List[Tuple[float, Dict]]:
@@ -64,7 +64,7 @@ def filter_positive_articles(articles: List[Dict], client, model: str) -> List[T
 
         # Only include articles that meet the thresholds
         if sentiment > SENTIMENT_THRESHOLD and relevance > RELEVANCE_THRESHOLD:
-            combined_score = sentiment + relevance
+            combined_score = (sentiment + relevance) / 2  # Equal weights
             positive_articles.append((combined_score, article))
             logging.info(f"Article selected: {title} (Score: {combined_score})")
         else:
