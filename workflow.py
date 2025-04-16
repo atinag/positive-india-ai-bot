@@ -42,13 +42,13 @@ def process_top_article(positive_articles: List[Tuple[float, Dict]], openai_clie
     # Pick the highest sentiment article
     top_article = positive_articles[0][1]
     title = top_article.get("title", "No Title Available")
-    url = top_article.get("url", "")
     description = top_article.get("description", "No Description Available")
+    url = top_article.get("url", "")
 
     logger.info(f"Top article selected: {title}")
 
     # Summarize the article
-    summary, url = summarize_news(openai_client, model, title, url)
+    summary, url = summarize_news(openai_client, model, title, description, url)
     if not summary:
         logger.error("Failed to summarize the article.")
         return None

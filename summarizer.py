@@ -3,7 +3,7 @@ import openai
 import time
 from typing import Optional, Tuple
 
-def summarize_news(client, model: str, title: str, url: str, retries: int = 3, prompt_template: str = None) -> Tuple[Optional[str], str]:
+def summarize_news(client, model: str, title: str, description: str, url: str, retries: int = 3, prompt_template: str = None) -> Tuple[Optional[str], str]:
     """
     Summarizes a news article using OpenAI's API.
 
@@ -11,6 +11,7 @@ def summarize_news(client, model: str, title: str, url: str, retries: int = 3, p
         client: OpenAI client instance.
         model: The OpenAI model to use (e.g., "gpt-35-turbo").
         title: The title of the news article.
+        description: The description of the news article.
         url: The URL of the news article.
         retries: Number of retries in case of API failure.
         prompt_template: Optional custom prompt template.
@@ -19,8 +20,16 @@ def summarize_news(client, model: str, title: str, url: str, retries: int = 3, p
         A tuple containing the summary (or None if failed) and the URL.
     """
     if not prompt_template:
-        prompt_template = "Summarize this positive news headline about India:\n\n{title}\n\nSummary:"
-    prompt = prompt_template.format(title=title)
+        prompt_template = (
+            f"Summarize the following positive news headline and description into a clear, positive and tweet-friendly summary "
+            f"that highlights the positive aspects of the story. Aim is to highlight India's progress, development, or innovation. :\n\n"
+            f"Title: {title}\n"
+            f"Description: {description}\n\n"
+            f"Summary:"
+        )
+
+    
+    prompt = prompt_template.format(title=title, description=description)
 
     for attempt in range(retries):
         try:
