@@ -1,46 +1,79 @@
-def post_to_twitter(client, summary, url):
+import logging
+from typing import Optional, List
 
-    hashtags = "#PositiveIndia #IndiaDevelopment #GoodNewsIndia"
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-    print(f"Summary is:\n{summary}")
-    print(f"URL is:\n{url}")
+MAX_TWEET_LENGTH = 280
+HASHTAGS = "#PositiveIndia #IndiaDevelopment #GoodNewsIndia"
 
-    # Add hashtags and URL only to the first tweet
-    first_tweet_text = f"{summary}\n🔗 {url}\n{hashtags}"
-    print(f"Length of first tweet is:\n{len(first_tweet_text)}")
-
-    # Check if the first tweet exceeds Twitter's character limit
-    if len(first_tweet_text) > 280:
-        # Trim the summary to fit within the limit, ensuring no word is split
-        truncated_summary = summary[:280 - len(hashtags) - len(url) - 5]
+def construct_first_tweet(summary: str, url: str) -> str:
+    """
+    Constructs the first tweet with hashtags and URL.
+    Truncates the summary if it exceeds the character limit.
+    """
+    first_tweet_text = f"{summary}\n🔗 {url}\n{HASHTAGS}"
+    if len(first_tweet_text) > MAX_TWEET_LENGTH:
+        truncated_summary = summary[:MAX_TWEET_LENGTH - len(HASHTAGS) - len(url) - 5]
         truncated_summary = truncated_summary.rsplit(' ', 1)[0]  # Ensure truncation happens at a word boundary
-        first_tweet_text = f"{truncated_summary}...\n🔗 {url}\n{hashtags}"
-    else:
-        truncated_summary = summary  # No truncation needed
+        first_tweet_text = f"{truncated_summary}...\n🔗 {url}\n{HASHTAGS}"
+    return first_tweet_text
+
+def split_summary_into_chunks(summary: str) -> List[str]:
+    """
+    Splits the remaining summary into chunks of 280 characters, ensuring no word is split.
+    """
+    chunks = []
+    while summary:
+        if len(summary) <= MAX_TWEET_LENGTH:
+            chunks.append(summary)
+            break
+        else:
+            chunk = summary[:MAX_TWEET_LENGTH]
+            chunk = chunk.rsplit(' ', 1)[0]  # Ensure truncation happens at a word boundary
+            chunks.append(chunk)
+            summary = summary[len(chunk):].strip()
+    return chunks
+
+def post_to_twitter(client, summary: str, url: str) -> Optional[int]:
+    """
+    Posts a summary and URL to Twitter as a thread if necessary.
+
+    Args:
+        client: Tweepy client instance.
+        summary: The summary to post.
+        url: The URL to include in the first tweet.
+
+    Returns:
+        The ID of the last tweet in the thread, or None if an error occurs.
+    """
+    logging.info("Posting to Twitter...")
+    logging.info(f"Summary: {summary}")
+    logging.info(f"URL: {url}")
+
+    # Construct the first tweet
+    first_tweet_text = construct_first_tweet(summary, url)
+    logging.info(f"First tweet length: {len(first_tweet_text)}")
 
     # Post the first tweet
-    tweet = client.create_tweet(text=first_tweet_text)
-    tweet_id = tweet.data["id"]
+    try:
+        tweet = client.create_tweet(text=first_tweet_text)
+        tweet_id = tweet.data["id"]
+    except Exception as e:
+        logging.error(f"Error posting the first tweet: {e}")
+        return None
 
-    # Prepare the remaining summary for the thread
-    remaining_summary = summary[len(truncated_summary):].strip()
+    # Prepare and post the remaining tweets as a thread
+    remaining_summary = summary[len(first_tweet_text):].strip()
     if remaining_summary:
-        # Split the remaining summary into chunks of 280 characters, ensuring no word is split
-        split_summary = []
-        while remaining_summary:
-            if len(remaining_summary) <= 280:
-                split_summary.append(remaining_summary)
-                break
-            else:
-                chunk = remaining_summary[:280]
-                chunk = chunk.rsplit(' ', 1)[0]  # Ensure truncation happens at a word boundary
-                split_summary.append(chunk)
-                remaining_summary = remaining_summary[len(chunk):].strip()
+        chunks = split_summary_into_chunks(remaining_summary)
+        for chunk in chunks:
+            try:
+                tweet = client.create_tweet(text=chunk, in_reply_to_tweet_id=tweet_id)
+                tweet_id = tweet.data["id"]
+            except Exception as e:
+                logging.error(f"Error posting a tweet in the thread: {e}")
+                return None
 
-        # Post the remaining tweets
-        for part in split_summary:
-            tweet = client.create_tweet(text=part, in_reply_to_tweet_id=tweet_id)
-            tweet_id = tweet.data["id"]
-
+    logging.info("Successfully posted the thread.")
     return tweet_id
 
