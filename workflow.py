@@ -2,7 +2,7 @@ from logger import logger  # Import the centralized logger
 from typing import List, Dict, Tuple, Optional
 from sentiment_analysis import analyze_sentiment_with_openai
 from summarizer import summarize_news
-from twitter_poster import post_to_twitter
+from twitter_poster import post_thread_with_link
 
 def filter_positive_articles(articles: List[Dict], client, model: str, sentiment_threshold: float, relevance_threshold: float) -> List[Tuple[float, Dict]]:
     """
@@ -54,7 +54,7 @@ def process_top_article(positive_articles: List[Tuple[float, Dict]], openai_clie
         return None
 
     # Post to Twitter
-    tweet_id = post_to_twitter(tweepy_client, summary, url)
+    tweet_id = post_thread_with_link(tweepy_client, summary, url)
     if tweet_id:
         logger.info(f"Successfully posted to Twitter. Tweet ID: {tweet_id}")
     else:
