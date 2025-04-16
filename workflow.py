@@ -20,13 +20,15 @@ def filter_positive_articles(articles: List[Dict], client, model: str, sentiment
         # Only include articles that meet the thresholds
         if sentiment > sentiment_threshold and relevance > relevance_threshold:
             combined_score = (sentiment + relevance) / 2  # Equal weights
-            positive_articles.append((combined_score, article))
+            positive_articles.append((combined_score, article))  # Ensure tuple is appended
             logging.info(f"Article selected: {title} (Score: {combined_score})")
         else:
             logging.info(f"Article rejected: {title} (Sentiment: {sentiment}, Relevance: {relevance})")
 
     # Sort articles by combined score in descending order
-    return sorted(positive_articles, reverse=True)
+    positive_articles = sorted(positive_articles, key=lambda x: x[0], reverse=True)  # Sort by combined_score
+    logging.debug(f"Positive Articles: {positive_articles}")
+    return positive_articles
 
 
 def process_top_article(positive_articles: List[Tuple[float, Dict]], openai_client, tweepy_client, model: str) -> Optional[Dict]:
