@@ -64,10 +64,12 @@ def post_to_twitter(client, summary: str, url: str) -> Optional[int]:
         logger.error(f"Error posting the first tweet: {e}")
         return None
 
-    # Prepare and post the remaining tweets as a thread
-    remaining_summary = summary[len(summary[:MAX_TWEET_LENGTH - len(HASHTAGS) - len(url) - 5]):].strip()
+    # Calculate the remaining summary
+    # Exclude only the part of the summary that was included in the first tweet
+    remaining_summary = summary[len(summary) - len(first_tweet_text) + len(url) + len(HASHTAGS) + 5:].strip()
     logger.debug(f"Remaining summary after first tweet: {remaining_summary}")
 
+    # Post the remaining tweets as a thread
     if remaining_summary:
         chunks = split_summary_into_chunks(remaining_summary)
         logger.debug(f"Chunks to be posted in thread: {chunks}")
