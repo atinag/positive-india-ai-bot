@@ -1,6 +1,6 @@
 from config import NEWS_API_KEY, OPENAI_API_KEY, TOPICS, DOMAINS
 from news_fetcher import fetch_news
-from sentiment_analysis import analyze_sentiment_with_textblob_and_filter
+from sentiment_analysis import analyze_sentiment_with_textblob_and_filter, analyze_sentiment_with_openai
 from summarizer import summarize_news
 from twitter_poster import post_to_twitter
 from openai import AzureOpenAI
@@ -41,25 +41,37 @@ SENTIMENT_THRESHOLD = 0.1
 RELEVANCE_THRESHOLD = 0
 
 
-def filter_positive_articles(articles: List[Dict]) -> List[Tuple[float, Dict]]:
+def filter_positive_articles(articles: List[Dict], client, model: str) -> List[Tuple[float, Dict]]:
     """
-    Filters articles based on sentiment and relevance scores.
+    Filters articles based on OpenAI sentiment and relevance analysis.
 
     Args:
         articles: List of articles fetched from NewsAPI.
+        client: OpenAI client instance.
+        model: The OpenAI model to use (e.g., "gpt-35-turbo").
 
     Returns:
-        A list of tuples containing the combined score and the article.
+        A sorted list of tuples containing the combined score and the article.
     """
     positive_articles = []
     for article in articles:
-        text = f"{article.get('title', '')} {article.get('description', '')}"
-        sentiment, relevance_score = analyze_sentiment_with_textblob_and_filter(text)
+        title = article.get("title", "")
+        description = article.get("description", "")
+        text = f"{title} {description}"
 
-        if sentiment > SENTIMENT_THRESHOLD and relevance_score > RELEVANCE_THRESHOLD:
-            positive_articles.append((sentiment + relevance_score, article))
+        # Use OpenAI to analyze sentiment and relevance
+        sentiment, relevance = analyze_sentiment_with_openai(client, text, model)
 
-    return positive_articles
+        # Only include articles that meet the thresholds
+        if sentiment > SENTIMENT_THRESHOLD and relevance > RELEVANCE_THRESHOLD:
+            combined_score = sentiment + relevance
+            positive_articles.append((combined_score, article))
+            logging.info(f"Article selected: {title} (Score: {combined_score})")
+        else:
+            logging.info(f"Article rejected: {title} (Sentiment: {sentiment}, Relevance: {relevance})")
+
+    # Sort articles by combined score in descending order
+    return sorted(positive_articles, reverse=True)
 
 
 def process_top_article(positive_articles: List[Tuple[float, Dict]]) -> Optional[Dict]:
@@ -77,7 +89,7 @@ def process_top_article(positive_articles: List[Tuple[float, Dict]]) -> Optional
         return None
 
     # Pick the highest sentiment article
-    top_article = sorted(positive_articles, reverse=True)[0][1]
+    top_article = positive_articles[0][1]
     title = top_article.get("title", "No Title Available")
     url = top_article.get("url", "")
     description = top_article.get("description", "No Description Available")
@@ -108,11 +120,14 @@ def main():
             logging.warning("No articles fetched from NewsAPI.")
             return
 
-        # Filter positive articles
-        positive_articles = filter_positive_articles(articles)
+        # Filter positive articles using OpenAI
+        positive_articles = filter_positive_articles(articles, openai_client, AZURE_DEPLOYMENT_NAME)
 
         # Process the top article
-        process_top_article(positive_articles)
+        if positive_articles:
+            process_top_article(positive_articles)
+        else:
+            logging.warning("No overwhelmingly positive and relevant articles found.")
 
     except Exception as e:
         logging.error(f"An unexpected error occurred: {e}")
