@@ -20,10 +20,11 @@ def main():
 
         if positive_articles:
             logger.info("Processing the top article...")
-            top_article = positive_articles[0]  # Get the top article
+            top_article = positive_articles[0][1]  # Get the second element of the first tuple
+            title = top_article.get("title", "No Title Available")  # Safely get the title
 
             # Check for duplicates
-            if is_duplicate(top_article["title"]):
+            if is_duplicate(title):
                 logger.warning("Duplicate article detected. Skipping posting.")
                 return
 
@@ -31,7 +32,7 @@ def main():
             process_top_article(top_article, openai_client, tweepy_client, AZURE_DEPLOYMENT_NAME)
 
             # Save the posted article to avoid duplicates in the future
-            save_posted_tweet(top_article["title"])
+            save_posted_tweet(title)
         else:
             logger.warning("No overwhelmingly positive and relevant articles found.")
 
@@ -39,7 +40,7 @@ def main():
         logger.error(f"An unexpected error occurred: {e}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": 
     main()
 
 
