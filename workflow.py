@@ -31,33 +31,34 @@ def filter_positive_articles(articles: List[Dict], client, model: str, sentiment
     return positive_articles
 
 
-def process_top_article(positive_articles: List[Tuple[float, Dict]], openai_client, tweepy_client, model: str) -> Optional[Dict]:
+def process_top_article(top_article: Dict, openai_client, tweepy_client, model: str) -> Optional[Dict]:
     """
-    Processes the top article by summarizing and posting it to Twitter.
+    Processes a single article by summarizing and posting it to Twitter.
     """
-    if not positive_articles:
-        logger.warning("No overwhelmingly positive articles found.")
+    try:
+        title = top_article.get("title", "No Title Available")
+        description = top_article.get("description", "No Description Available")
+        url = top_article.get("url", "")
+
+        logger.info(f"Top article selected: {title}")
+
+        # Summarize the article
+        summary, url = summarize_news(openai_client, model, title, description, url)
+        if not summary:
+            logger.error("Failed to summarize the article.")
+            return None
+
+        # Post to Twitter
+        tweet_id = post_thread_with_link(tweepy_client, summary, url)
+        if tweet_id:
+            logger.info(f"Successfully posted to Twitter. Tweet ID: {tweet_id}")
+        else:
+            logger.error("Failed to post to Twitter.")
+
+        return top_article
+    except KeyError as e:
+        logger.error(f"KeyError while processing the article: {e}")
         return None
-
-    # Pick the highest sentiment article
-    top_article = positive_articles[0][1]
-    title = top_article.get("title", "No Title Available")
-    description = top_article.get("description", "No Description Available")
-    url = top_article.get("url", "")
-
-    logger.info(f"Top article selected: {title}")
-
-    # Summarize the article
-    summary, url = summarize_news(openai_client, model, title, description, url)
-    if not summary:
-        logger.error("Failed to summarize the article.")
+    except Exception as e:
+        logger.error(f"Unexpected error while processing the article: {e}", exc_info=True)
         return None
-
-    # Post to Twitter
-    tweet_id = post_thread_with_link(tweepy_client, summary, url)
-    if tweet_id:
-        logger.info(f"Successfully posted to Twitter. Tweet ID: {tweet_id}")
-    else:
-        logger.error("Failed to post to Twitter.")
-
-    return top_article

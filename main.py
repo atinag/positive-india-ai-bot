@@ -42,7 +42,6 @@ def main():
                 process_top_article(top_article, openai_client, tweepy_client, AZURE_DEPLOYMENT_NAME)
             except Exception as e:
                 logger.error(f"Error during article processing: {e}", exc_info=True)
-                return
 
             # Save the posted article to avoid duplicates in the future
             try:
