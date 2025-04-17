@@ -74,13 +74,17 @@ def is_duplicate(new_tweet):
         return True
 
     # Semantic similarity check
-    if posted_tweets:
-        embeddings1 = model.encode([new_tweet], convert_to_tensor=True)
-        embeddings2 = model.encode(posted_tweets, convert_to_tensor=True)
-        cosine_scores = util.cos_sim(embeddings1, embeddings2)
+    if not posted_tweets:
+        logger.info("No previously posted tweets found. Skipping semantic similarity check.")
+        return False
 
-        if any(score > SIMILARITY_THRESHOLD for score in cosine_scores[0]):
-            logger.info("Tweet is a semantic duplicate.")
-            return True
+    # Perform semantic similarity check
+    embeddings1 = model.encode([new_tweet], convert_to_tensor=True)
+    embeddings2 = model.encode(posted_tweets, convert_to_tensor=True)
+    cosine_scores = util.cos_sim(embeddings1, embeddings2)
+
+    if any(score > SIMILARITY_THRESHOLD for score in cosine_scores[0]):
+        logger.info("Tweet is a semantic duplicate.")
+        return True
 
     return False

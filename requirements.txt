@@ -3,5 +3,5 @@ requests
 tweepy
 python-dotenv
 textblob
-sentence-transformers
+sentence-transformers[core]
 azure-storage-blob
