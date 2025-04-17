@@ -27,10 +27,15 @@ def main():
             top_article = positive_articles[0][1]  # Get the second element of the first tuple
             title = top_article.get("title", "No Title Available")  # Safely get the title
 
+            logger.debug(f"Top article title: {title}")
+
             # Check for duplicates
-            if is_duplicate(title):
-                logger.warning("Duplicate article detected. Skipping posting.")
-                return
+            try:
+                if is_duplicate(title):
+                    logger.warning("Duplicate article detected. Skipping posting.")
+                    return
+            except Exception as e:
+                logger.error(f"Error during duplicate check: {e}")
 
             # Process and post the article
             process_top_article(top_article, openai_client, tweepy_client, AZURE_DEPLOYMENT_NAME)
