@@ -35,18 +35,25 @@ def main():
                     logger.warning("Duplicate article detected. Skipping posting.")
                     return
             except Exception as e:
-                logger.error(f"Error during duplicate check: {e}")
+                logger.error(f"Error during duplicate check: {e}", exc_info=True)
 
             # Process and post the article
-            process_top_article(top_article, openai_client, tweepy_client, AZURE_DEPLOYMENT_NAME)
+            try:
+                process_top_article(top_article, openai_client, tweepy_client, AZURE_DEPLOYMENT_NAME)
+            except Exception as e:
+                logger.error(f"Error during article processing: {e}", exc_info=True)
+                return
 
             # Save the posted article to avoid duplicates in the future
-            save_posted_tweet(title)
+            try:
+                save_posted_tweet(title)
+            except Exception as e:
+                logger.error(f"Error saving posted tweet: {e}", exc_info=True)
         else:
             logger.warning("No overwhelmingly positive and relevant articles found.")
 
     except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}")
+        logger.error(f"An unexpected error occurred: {e}", exc_info=True)
 
 
 if __name__ == "__main__": 
