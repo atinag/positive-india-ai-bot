@@ -3,9 +3,8 @@ import os
 from logger import logger
 from sentence_transformers import SentenceTransformer, util
 from blob_storage import download_blob, upload_blob
+from config import POSTED_TWEETS_FILE, BLOB_NAME  # Import from config.py
 
-POSTED_TWEETS_FILE = "posted_tweets.json"  # Local file to store posted tweets
-BLOB_NAME = "posted_tweets.json"  # Blob name in Azure Blob Storage
 SIMILARITY_THRESHOLD = 0.9  # Threshold for semantic similarity
 
 # Load the semantic similarity model
@@ -23,11 +22,15 @@ def load_posted_tweets():
         # Load the local file
         if os.path.exists(POSTED_TWEETS_FILE):
             with open(POSTED_TWEETS_FILE, "r") as file:
-                return json.load(file)
+                try:
+                    return json.load(file)  # Attempt to parse JSON
+                except json.JSONDecodeError:
+                    logger.warning(f"File '{POSTED_TWEETS_FILE}' is empty or contains invalid JSON. Returning an empty list.")
+                    return []  # Return an empty list if JSON is invalid
     except Exception as e:
         logger.error(f"Error loading posted tweets: {e}")
 
-    return []
+    return []  # Return an empty list if any error occurs
 
 
 def save_posted_tweet(tweet_text):

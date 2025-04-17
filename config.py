@@ -12,6 +12,8 @@ TWITTER_BEARER_TOKEN = os.getenv("TWITTER_BEARER_TOKEN")
 # Azure Blob Storage configuration
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
 CONTAINER_NAME = "containerpositive-india-bot"
+POSTED_TWEETS_FILE = "posted_tweets.json"  # Local file to store posted tweets
+BLOB_NAME = "posted_tweets.json"  # Blob name in Azure Blob Storage
 
 # OpenAI Configuration
 AZURE_DEPLOYMENT_NAME = "gpt-35-turbo"

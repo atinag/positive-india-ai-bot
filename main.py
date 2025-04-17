@@ -4,9 +4,13 @@ from news_fetcher import fetch_news
 from workflow import filter_positive_articles, process_top_article
 from logger import logger  # Import the centralized logger
 from duplicate_checker import is_duplicate, save_posted_tweet
+from blob_storage import initialize_posted_tweets
 
 def main():
     try:
+        # Ensure the posted_tweets.json file is initialized
+        initialize_posted_tweets()
+
         logger.info("Fetching news articles...")
         articles = fetch_news(TOPICS, DOMAINS, NEWS_API_KEY)
         if not articles:
