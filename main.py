@@ -3,6 +3,7 @@ from clients import openai_client, tweepy_client
 from news_fetcher import fetch_news
 from workflow import filter_positive_articles, process_top_article
 from logger import logger  # Import the centralized logger
+from duplicate_checker import is_duplicate, save_posted_tweet
 
 def main():
     try:
@@ -19,7 +20,18 @@ def main():
 
         if positive_articles:
             logger.info("Processing the top article...")
-            process_top_article(positive_articles, openai_client, tweepy_client, AZURE_DEPLOYMENT_NAME)
+            top_article = positive_articles[0]  # Get the top article
+
+            # Check for duplicates
+            if is_duplicate(top_article["title"]):
+                logger.warning("Duplicate article detected. Skipping posting.")
+                return
+
+            # Process and post the article
+            process_top_article(top_article, openai_client, tweepy_client, AZURE_DEPLOYMENT_NAME)
+
+            # Save the posted article to avoid duplicates in the future
+            save_posted_tweet(top_article["title"])
         else:
             logger.warning("No overwhelmingly positive and relevant articles found.")
 
