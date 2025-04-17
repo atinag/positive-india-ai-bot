@@ -24,7 +24,8 @@ def load_posted_tweets():
             with open(POSTED_TWEETS_FILE, "r") as file:
                 try:
                     posted_tweets = json.load(file)  # Attempt to parse JSON
-                    logger.info(f"Loaded posted tweets: {posted_tweets}")
+                    logger.info(f"Loaded posted tweets successfully")
+                    logger.debug(f"Loaded posted tweets: {posted_tweets}")
                     return posted_tweets
                 except json.JSONDecodeError:
                     logger.warning(f"File '{POSTED_TWEETS_FILE}' is empty or contains invalid JSON. Returning an empty list.")
