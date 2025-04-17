@@ -1,3 +1,14 @@
+import os
+os.environ["NEWS_API_KEY"] = "mock-news-api-key"
+os.environ["OPENAI_API_KEY"] = "mock-openai-api-key"
+os.environ["TWITTER_CONSUMER_KEY"] = "mock-twitter-consumer-key"
+os.environ["TWITTER_CONSUMER_SECRET"] = "mock-twitter-consumer-secret"
+os.environ["TWITTER_ACCESS_TOKEN"] = "mock-twitter-access-token"
+os.environ["TWITTER_ACCESS_SECRET"] = "mock-twitter-access-secret"
+os.environ["TWITTER_BEARER_TOKEN"] = "mock-twitter-bearer-token"
+os.environ["AZURE_STORAGE_CONNECTION_STRING"] = "mock-azure-storage-connection-string"
+os.environ["AZURE_OPENAI_ENDPOINT"] = "https://azureopenaipoistiveindiabotinstance.openai.azure.com/"
+
 import unittest
 from unittest.mock import patch, MagicMock
 from main import main

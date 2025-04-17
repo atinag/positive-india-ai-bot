@@ -1,13 +1,14 @@
 import openai
 import tweepy
 from config import OPENAI_API_KEY, AZURE_DEPLOYMENT_NAME, TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET, TWITTER_BEARER_TOKEN
+from openai import AzureOpenAI
 
 def get_openai_client():
-    openai.api_type = "azure"
-    openai.api_base = "https://azureopenaipoistiveindiabotinstance.openai.azure.com/"
-    openai.api_version = "2023-12-01-preview"
-    openai.api_key = OPENAI_API_KEY
-    return openai
+    return AzureOpenAI(
+    api_key=OPENAI_API_KEY,
+    api_version="2023-12-01-preview",
+    azure_endpoint="https://azureopenaipoistiveindiabotinstance.openai.azure.com/"
+    )
 
 # Use this function to get the client instead of directly initializing it
 openai_client = get_openai_client()
