@@ -3,7 +3,16 @@ import openai
 import time
 from typing import Optional, Tuple
 
-def summarize_news(client, model: str, title: str, description: str, url: str, retries: int = 3, prompt_template: str = None) -> Tuple[Optional[str], str]:
+def summarize_news(
+    client,
+    model: str,
+    title: str,
+    description: str,
+    url: str,
+    allowed_summary_length: int,
+    retries: int = 3,
+    prompt_template: str = None
+) -> Tuple[Optional[str], str]:
     """
     Summarizes a news article using OpenAI's API.
 
@@ -13,6 +22,7 @@ def summarize_news(client, model: str, title: str, description: str, url: str, r
         title: The title of the news article.
         description: The description of the news article.
         url: The URL of the news article.
+        allowed_summary_length: Max length for the summary (including hashtags).
         retries: Number of retries in case of API failure.
         prompt_template: Optional custom prompt template.
 
@@ -21,16 +31,20 @@ def summarize_news(client, model: str, title: str, description: str, url: str, r
     """
     if not prompt_template:
         prompt_template = (
-            f"Summarize the following positive news headline and description into a clear, tweet-friendly summary "
-            f"that highlights the positive aspects of the story. The summary should be suitable for X (Twitter) and include "
-            f"3-4 relevant and trending hashtags (in camelCase or lowercase). Avoid generic ones like #news unless highly relevant.\n\n"
-            f"Title: {title}\n"
-            f"Description: {description}\n\n"
-            f"Summary:"
+            "Summarize the following positive news headline and description into a single tweet-friendly summary "
+            "that highlights the positive aspects of the story. The summary must include 3-4 relevant and trending hashtags "
+            "(in camelCase or lowercase), and the entire summary (including hashtags) must be no more than {allowed_summary_length} characters. "
+            "Do not include a link. Avoid generic hashtags like #news unless highly relevant.\n\n"
+            "Title: {title}\n"
+            "Description: {description}\n\n"
+            "Summary:"
         )
 
-    
-    prompt = prompt_template.format(title=title, description=description)
+    prompt = prompt_template.format(
+        title=title,
+        description=description,
+        allowed_summary_length=allowed_summary_length
+    )
 
     for attempt in range(retries):
         try:

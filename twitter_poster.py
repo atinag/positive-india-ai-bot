@@ -3,7 +3,7 @@ from typing import Optional, List
 
 MAX_TWEET_LENGTH = 280
 LINK_LENGTH = 23  # Twitter/X t.co shortener
-HASHTAGS = "#PositiveIndia #IndiaDevelopment"
+HASHTAGS = "#PositiveIndiaAI"
 EXTRA = len("\n🔗 \n")  # newline, emoji, and space
 
 def post_thread_with_link(client, summary: str, url: str) -> Optional[int]:

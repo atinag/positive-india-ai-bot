@@ -31,19 +31,32 @@ def filter_positive_articles(articles: List[Dict], client, model: str, sentiment
     return positive_articles
 
 
-def process_top_article(top_article: Dict, openai_client, tweepy_client, model: str) -> Optional[Dict]:
+def process_top_article(
+    article,
+    openai_client,
+    tweepy_client,
+    deployment_name,
+    allowed_summary_length  # Add this parameter
+):
     """
     Processes a single article by summarizing and posting it to Twitter.
     """
     try:
-        title = top_article.get("title", "No Title Available")
-        description = top_article.get("description", "No Description Available")
-        url = top_article.get("url", "")
+        title = article.get("title", "No Title Available")
+        description = article.get("description", "No Description Available")
+        url = article.get("url", "")
 
         logger.info(f"Top article selected: {title}")
 
         # Summarize the article
-        summary, url = summarize_news(openai_client, model, title, description, url)
+        summary, url = summarize_news(
+            openai_client,
+            deployment_name,
+            title,
+            description,
+            url,
+            allowed_summary_length  # Pass it here
+        )
         if not summary:
             logger.error("Failed to summarize the article.")
             return None
@@ -55,7 +68,7 @@ def process_top_article(top_article: Dict, openai_client, tweepy_client, model: 
         else:
             logger.error("Failed to post to Twitter.")
 
-        return top_article
+        return article
     except KeyError as e:
         logger.error(f"KeyError while processing the article: {e}")
         return None

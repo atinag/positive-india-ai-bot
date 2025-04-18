@@ -5,6 +5,7 @@ from workflow import filter_positive_articles, process_top_article
 from logger import logger  # Import the centralized logger
 from duplicate_checker import is_duplicate, save_posted_tweet
 from blob_storage import initialize_posted_tweets
+from twitter_poster import MAX_TWEET_LENGTH, LINK_LENGTH, HASHTAGS, EXTRA  # Add this import
 
 def main():
     try:
@@ -29,6 +30,9 @@ def main():
 
             logger.debug(f"Top article title: {title}")
 
+            # Calculate allowed summary length for the tweet
+            allowed_summary_length = MAX_TWEET_LENGTH - LINK_LENGTH - len(HASHTAGS) - EXTRA
+
             # Check for duplicates
             try:
                 if is_duplicate(title):
@@ -39,7 +43,13 @@ def main():
 
             # Process and post the article
             try:
-                process_top_article(top_article, openai_client, tweepy_client, AZURE_DEPLOYMENT_NAME)
+                process_top_article(
+                    top_article,
+                    openai_client,
+                    tweepy_client,
+                    AZURE_DEPLOYMENT_NAME,
+                    allowed_summary_length  # Pass this to the workflow
+                )
             except Exception as e:
                 logger.error(f"Error during article processing: {e}", exc_info=True)
                 return  # Only save posted tweet if processing succeeded
