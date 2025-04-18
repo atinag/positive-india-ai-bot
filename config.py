@@ -27,7 +27,21 @@ TOPICS = [
     "India growth story",
     "India economic growth",
     "India rising",
-    "India development"
+    "India development",
+    "India innovation",
+    "India startup",
+    "India infrastructure",
+    "India economy",
+    "India science technology",
+    "India renewable energy",
+    "India manufacturing",
+    "India healthcare",
+    "India education reform",
+    "India digital transformation",
+    "India green energy",
+    "India space exploration",
+    "India clean tech",
+    "India AI research"
 ]
 DOMAINS = ",".join([
     "thehindu.com", "livemint.com", "business-standard.com",

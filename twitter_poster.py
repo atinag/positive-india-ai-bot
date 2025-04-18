@@ -2,7 +2,7 @@ from logger import logger  # Import the centralized logger
 from typing import Optional, List
 
 MAX_TWEET_LENGTH = 280
-HASHTAGS = "#PositiveIndia #IndiaDevelopment #GoodNewsIndia"
+HASHTAGS = "#PositiveIndia #IndiaDevelopment"
 
 def post_thread_with_link(client, summary: str, url: str) -> Optional[int]:
     """

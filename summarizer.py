@@ -21,8 +21,9 @@ def summarize_news(client, model: str, title: str, description: str, url: str, r
     """
     if not prompt_template:
         prompt_template = (
-            f"Summarize the following positive news headline and description into a clear, positive and tweet-friendly summary "
-            f"that highlights the positive aspects of the story. Aim is to highlight India's progress, development, or innovation. :\n\n"
+            f"Summarize the following positive news headline and description into a clear, tweet-friendly summary "
+            f"that highlights the positive aspects of the story. The summary should be suitable for X (Twitter) and include "
+            f"3-4 relevant and trending hashtags (in camelCase or lowercase). Avoid generic ones like #news unless highly relevant.\n\n"
             f"Title: {title}\n"
             f"Description: {description}\n\n"
             f"Summary:"
