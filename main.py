@@ -24,41 +24,44 @@ def main():
         )
 
         if positive_articles:
-            logger.info("Processing the top article...")
-            top_article = positive_articles[0][1]  # Get the second element of the first tuple
-            title = top_article.get("title", "No Title Available")  # Safely get the title
+            logger.info("Looking for the first non-duplicate positive article...")
+            for _, article in positive_articles:
+                title = article.get("title", "No Title Available")
+                try:
+                    if is_duplicate(title):
+                        logger.warning(f"Duplicate article detected: {title}. Trying next article.")
+                        continue
+                except Exception as e:
+                    logger.error(f"Error during duplicate check: {e}", exc_info=True)
+                    continue
 
-            logger.debug(f"Top article title: {title}")
+                logger.info(f"Processing article: {title}")
+                logger.debug(f"Top article title: {title}")
 
-            # Calculate allowed summary length for the tweet
-            allowed_summary_length = MAX_TWEET_LENGTH - LINK_LENGTH - len(HASHTAGS) - EXTRA
+                # Calculate allowed summary length for the tweet
+                allowed_summary_length = MAX_TWEET_LENGTH - LINK_LENGTH - len(HASHTAGS) - EXTRA
 
-            # Check for duplicates
-            try:
-                if is_duplicate(title):
-                    logger.warning("Duplicate article detected. Skipping posting.")
-                    return
-            except Exception as e:
-                logger.error(f"Error during duplicate check: {e}", exc_info=True)
+                # Process and post the article
+                try:
+                    process_top_article(
+                        article,
+                        openai_client,
+                        tweepy_client,
+                        AZURE_DEPLOYMENT_NAME,
+                        allowed_summary_length
+                    )
+                except Exception as e:
+                    logger.error(f"Error during article processing: {e}", exc_info=True)
+                    continue  # Try next article if processing fails
 
-            # Process and post the article
-            try:
-                process_top_article(
-                    top_article,
-                    openai_client,
-                    tweepy_client,
-                    AZURE_DEPLOYMENT_NAME,
-                    allowed_summary_length  # Pass this to the workflow
-                )
-            except Exception as e:
-                logger.error(f"Error during article processing: {e}", exc_info=True)
-                return  # Only save posted tweet if processing succeeded
-
-            # Save the posted article to avoid duplicates in the future
-            try:
-                save_posted_tweet(title)
-            except Exception as e:
-                logger.error(f"Error saving posted tweet: {e}", exc_info=True)
+                # Save the posted article to avoid duplicates in the future
+                try:
+                    save_posted_tweet(title)
+                except Exception as e:
+                    logger.error(f"Error saving posted tweet: {e}", exc_info=True)
+                break  # Stop after posting the first non-duplicate article
+            else:
+                logger.warning("No non-duplicate positive articles found.")
         else:
             logger.warning("No overwhelmingly positive and relevant articles found.")
 

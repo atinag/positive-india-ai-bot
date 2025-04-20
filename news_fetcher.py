@@ -22,7 +22,7 @@ def construct_newsapi_url(topics: List[str], domains: str, api_key: str, page: i
         f"domains={domains}&"
         f"language=en&"
         f"sortBy=publishedAt&"
-        f"from={(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')}&"
+        f"from={(datetime.now() - timedelta(days=10)).strftime('%Y-%m-%d')}&"
         f"apiKey={api_key}&"
         f"page={page}&"
         f"pageSize={page_size}"
