@@ -6,17 +6,15 @@ from requests.adapters import HTTPAdapter
 import time
 from urllib3.util.retry import Retry
 import random
-from datetime import datetime, timedelta
 
-NEWSDATA_ENDPOINT = "https://newsdata.io/api/1/news"
+NEWSDATA_ENDPOINT = "https://newsdata.io/api/1/latest"
 
 def construct_newsdata_url(
     topics: List[str],
     api_key: str,
     country: str = "in",
     language: str = "en",
-    next_page: str = None,
-    from_date: str = None
+    next_page: str = None
 ) -> str:
     selected_topics = random.sample(topics, min(3, len(topics)))
     query = " OR ".join(selected_topics)
@@ -28,8 +26,6 @@ def construct_newsdata_url(
         f"country={country}&"
         f"language={language}"
     )
-    if from_date:
-        url += f"&from_date={from_date}"
     if next_page:
         url += f"&page={next_page}"
     return url
@@ -39,18 +35,16 @@ def fetch_news(
     api_key: str,
     country: str = "in",
     language: str = "en",
-    max_pages: int = 5,
-    days: int = 7
+    max_pages: int = 5
 ) -> List[Dict]:
     all_articles = []
     session = requests.Session()
     retries = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
     session.mount("https://", HTTPAdapter(max_retries=retries))
 
-    from_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
     next_page = None
     for _ in range(max_pages):
-        url = construct_newsdata_url(topics, api_key, country, language, next_page, from_date)
+        url = construct_newsdata_url(topics, api_key, country, language, next_page)
         logger.info(f"Fetching news from newsdata.io URL: {url}")
         try:
             response = session.get(url)
