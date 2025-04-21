@@ -1,5 +1,4 @@
 import requests
-from datetime import datetime, timedelta
 import urllib.parse
 from logger import logger
 from typing import List, Dict
@@ -7,10 +6,18 @@ from requests.adapters import HTTPAdapter
 import time
 from urllib3.util.retry import Retry
 import random
+from datetime import datetime, timedelta
 
 NEWSDATA_ENDPOINT = "https://newsdata.io/api/1/news"
 
-def construct_newsdata_url(topics: List[str], api_key: str, country: str = "in", language: str = "en", page: int = 1, page_size: int = 20) -> str:
+def construct_newsdata_url(
+    topics: List[str],
+    api_key: str,
+    country: str = "in",
+    language: str = "en",
+    next_page: str = None,
+    from_date: str = None
+) -> str:
     selected_topics = random.sample(topics, min(3, len(topics)))
     query = " OR ".join(selected_topics)
     encoded_query = urllib.parse.quote(query)
@@ -19,20 +26,31 @@ def construct_newsdata_url(topics: List[str], api_key: str, country: str = "in",
         f"apikey={api_key}&"
         f"q={encoded_query}&"
         f"country={country}&"
-        f"language={language}&"
-        f"page={page}&"
-        f"page_size={page_size}"
+        f"language={language}"
     )
+    if from_date:
+        url += f"&from_date={from_date}"
+    if next_page:
+        url += f"&page={next_page}"
     return url
 
-def fetch_news(topics: List[str], api_key: str, country: str = "in", language: str = "en", max_pages: int = 5, page_size: int = 20) -> List[Dict]:
+def fetch_news(
+    topics: List[str],
+    api_key: str,
+    country: str = "in",
+    language: str = "en",
+    max_pages: int = 5,
+    days: int = 7
+) -> List[Dict]:
     all_articles = []
     session = requests.Session()
     retries = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
     session.mount("https://", HTTPAdapter(max_retries=retries))
 
-    for page in range(1, max_pages + 1):
-        url = construct_newsdata_url(topics, api_key, country, language, page, page_size)
+    from_date = (datetime.now() - timedelta(days=days)).strftime("%Y-%m-%d")
+    next_page = None
+    for _ in range(max_pages):
+        url = construct_newsdata_url(topics, api_key, country, language, next_page, from_date)
         logger.info(f"Fetching news from newsdata.io URL: {url}")
         try:
             response = session.get(url)
@@ -44,9 +62,9 @@ def fetch_news(topics: List[str], api_key: str, country: str = "in", language: s
             news = response.json()
             articles = news.get("results", [])
             if not articles:
-                logger.info(f"No more articles found at page {page}.")
+                logger.info("No more articles found.")
                 break
-            logger.info(f"Fetched {len(articles)} articles from page {page}.")
+            logger.info(f"Fetched {len(articles)} articles.")
             for art in articles:
                 all_articles.append({
                     "title": art.get("title"),
@@ -55,7 +73,8 @@ def fetch_news(topics: List[str], api_key: str, country: str = "in", language: s
                     "publishedAt": art.get("pubDate"),
                     "source": {"name": art.get("source_id", "")}
                 })
-            if len(articles) < page_size:
+            next_page = news.get("nextPage")
+            if not next_page:
                 break
         except requests.RequestException as e:
             logger.error(f"Error fetching newsdata.io: {e}")
