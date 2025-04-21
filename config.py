@@ -2,6 +2,7 @@ import os
 
 # API Keys
 NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+NEWSDATA_API_KEY = os.getenv("NEWSDATA_API_KEY")  # Add this line
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 TWITTER_CONSUMER_KEY = os.getenv("TWITTER_CONSUMER_KEY")
 TWITTER_CONSUMER_SECRET = os.getenv("TWITTER_CONSUMER_SECRET")
@@ -49,3 +50,6 @@ DOMAINS = ",".join([
     "indianexpress.com", "economictimes.indiatimes.com", "financialexpress.com",
     "yourstory.com", "indiatoday.in", "theprint.in", "scroll.in"
 ])
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+# Add any other config variables as needed

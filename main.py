@@ -1,6 +1,7 @@
-from config import NEWS_API_KEY, TOPICS, DOMAINS, SENTIMENT_THRESHOLD, RELEVANCE_THRESHOLD, AZURE_DEPLOYMENT_NAME
+from config import NEWS_API_KEY, NEWSDATA_API_KEY, TOPICS, DOMAINS, SENTIMENT_THRESHOLD, RELEVANCE_THRESHOLD, AZURE_DEPLOYMENT_NAME
 from clients import openai_client, tweepy_client
-from news_fetcher import fetch_news
+from newsapi_fetcher import fetch_news as fetch_newsapi
+from newsdata_fetcher import fetch_news as fetch_newsdata
 from workflow import filter_positive_articles, process_top_article
 from logger import logger  # Import the centralized logger
 from duplicate_checker import is_duplicate, save_posted_tweet
@@ -12,10 +13,17 @@ def main():
         # Ensure the posted_tweets.json file is initialized
         initialize_posted_tweets()
 
-        logger.info("Fetching news articles...")
-        articles = fetch_news(TOPICS, DOMAINS, NEWS_API_KEY)
+        logger.info("Fetching news articles from NewsAPI...")
+        articles_newsapi = fetch_newsapi(TOPICS, DOMAINS, NEWS_API_KEY)
+
+        logger.info("Fetching news articles from newsdata.io...")
+        articles_newsdata = fetch_newsdata(TOPICS, NEWSDATA_API_KEY)
+
+        # Combine articles from both sources
+        articles = articles_newsapi + articles_newsdata
+
         if not articles:
-            logger.warning("No articles fetched from NewsAPI.")
+            logger.warning("No articles fetched from any source.")
             return
 
         logger.info("Filtering positive articles...")
