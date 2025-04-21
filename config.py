@@ -44,7 +44,7 @@ TOPICS = [
     "India AI research"
 ]
 DOMAINS = ",".join([
-    "thehindu.com", "livemint.com", "business-standard.com",
+    "thehindu.com", "business-standard.com",
     "timesofindia.indiatimes.com", "hindustantimes.com", "ndtv.com",
     "indianexpress.com", "economictimes.indiatimes.com", "financialexpress.com",
     "yourstory.com", "indiatoday.in", "theprint.in", "scroll.in"
