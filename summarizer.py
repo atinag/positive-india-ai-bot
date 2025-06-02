@@ -33,8 +33,9 @@ def summarize_news(
         prompt_template = (
             "Summarize the following positive news headline and description into a single tweet-friendly summary "
             "that highlights the positive aspects of the story. The summary must include 3-4 relevant and trending hashtags "
-            "(in camelCase or lowercase), and the entire summary (including hashtags) must be no more than {allowed_summary_length} characters. "
-            "Do not include a link. Avoid generic hashtags like #news unless highly relevant.\n\n"
+            "(in camelCase or lowercase), and may mention up to 2 relevant Indian government or organization Twitter handles "
+            "(e.g., @isro, @RailMinIndia) if the content is about them. The entire summary (including hashtags and handles) "
+            "must be no more than {allowed_summary_length} characters. Do not include a link. Avoid generic hashtags like #news unless highly relevant.\n\n"
             "Title: {title}\n"
             "Description: {description}\n\n"
             "Summary:"
